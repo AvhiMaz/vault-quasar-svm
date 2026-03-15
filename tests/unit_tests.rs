@@ -2,32 +2,27 @@ use mollusk_svm::result::{Check, ProgramResult};
 use mollusk_svm::{program, Mollusk};
 use pinocchio_vault::instructions::DeposiIxtData;
 use pinocchio_vault::states::to_bytes;
-use pinocchio_vault::ID;
 use solana_sdk::account::Account;
 use solana_sdk::instruction::{AccountMeta, Instruction};
 use solana_sdk::native_token::LAMPORTS_PER_SOL;
 use solana_sdk::pubkey;
 use solana_sdk::pubkey::Pubkey;
 
-pub const PROGRAM: Pubkey = Pubkey::new_from_array(ID);
-
 pub const RENT: Pubkey = pubkey!("SysvarRent111111111111111111111111111111111");
 
 pub const PAYER: Pubkey = pubkey!("E6UcK3dSFc2yaFtEb35pc1WsBVcrPhEbnB87YoNDXhqy");
 
-pub fn mollusk() -> Mollusk {
-    Mollusk::new(&PROGRAM, "target/deploy/pinocchio_vault")
-}
-
 #[test]
 fn test_deposit() {
-    let mollusk = mollusk();
+    let program_id = Pubkey::new_unique();
+
+    let mollusk = Mollusk::new(&program_id, "target/deploy/pinocchio_vault");
 
     let (system_prgram, system_account) = program::keyed_account_for_system_program();
 
     let (vault_pda, bump) = Pubkey::find_program_address(
         &["pinocchio_vault_pda".as_bytes(), &PAYER.to_bytes()],
-        &PROGRAM,
+        &program_id,
     );
 
     let payer_acc = Account::new(10 * LAMPORTS_PER_SOL, 0, &system_prgram);
@@ -45,7 +40,7 @@ fn test_deposit() {
 
     ser_ix_data.extend_from_slice(to_bytes(&ix_data));
 
-    let instruction = Instruction::new_with_bytes(PROGRAM, &ser_ix_data, ix_account);
+    let instruction = Instruction::new_with_bytes(program_id, &ser_ix_data, ix_account);
 
     let tx_accounts = &vec![
         (PAYER, payer_acc.clone()),
@@ -61,13 +56,15 @@ fn test_deposit() {
 
 #[test]
 fn test_withdraw() {
-    let mollusk = mollusk();
+    let program_id = Pubkey::new_unique();
+
+    let mollusk = Mollusk::new(&program_id, "target/deploy/pinocchio_vault");
 
     let (system_prgram, system_account) = program::keyed_account_for_system_program();
 
     let (vault_pda, bump) = Pubkey::find_program_address(
         &["pinocchio_vault_pda".as_bytes(), &PAYER.to_bytes()],
-        &PROGRAM,
+        &program_id,
     );
 
     let payer_acc = Account::new(9, 0, &system_prgram);
@@ -83,7 +80,7 @@ fn test_withdraw() {
 
     ix_data.push(bump);
 
-    let instruction = Instruction::new_with_bytes(PROGRAM, &ix_data, ix_account);
+    let instruction = Instruction::new_with_bytes(program_id, &ix_data, ix_account);
 
     let tx_accounts = &vec![
         (PAYER, payer_acc.clone()),
