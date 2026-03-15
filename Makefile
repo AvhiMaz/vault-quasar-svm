@@ -9,5 +9,8 @@ so:
 test:
 	cargo test
 
-npm:
+quasar-svm:
 	npm test
+
+all:
+	make so && make quasar-svm

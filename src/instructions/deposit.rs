@@ -6,7 +6,7 @@ pub const LAMPORTS_PER_SOL: u64 = 1_000_000_000;
 
 use crate::states::{load_ix_data, DataLen};
 
-#[repr(C)]
+#[repr(packed)]
 pub struct DeposiIxtData {
     pub amount: u64,
     pub bump: u8,
